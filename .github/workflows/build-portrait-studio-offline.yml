@@ -1,0 +1,35 @@
+name: Build Offline Portrait Studio Windows 3.13
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'portrait-studio-offline/**'
+      - '.github/workflows/build-portrait-studio-offline.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: portrait-studio-offline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          architecture: x64
+      - name: Download Windows wheels and verify portrait model
+        shell: pwsh
+        run: ./build_offline_windows.ps1
+      - name: Upload final offline ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: PortraitStudio_WIN11_PY313_OFFLINE
+          path: portrait-studio-offline/PortraitStudio_WIN11_PY313_OFFLINE.zip
+          if-no-files-found: error
+          compression-level: 0
