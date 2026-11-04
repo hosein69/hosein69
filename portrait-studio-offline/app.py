@@ -17,7 +17,18 @@ def get_session():
     if not model.is_file():
         raise FileNotFoundError(f"Model missing: {model}")
     os.environ["U2NET_HOME"] = str(home)
-    return new_session("birefnet-portrait")
+    try:
+        session = new_session("birefnet-portrait")
+        st.session_state["active_model"] = "BiRefNet-Portrait"
+        return session
+    except Exception as exc:
+        st.warning("مدل پرتره بارگذاری نشد؛ مدل پشتیبان U2NetP استفاده می‌شود. جزئیات: " + str(exc)[:250])
+        fallback = home / "u2netp.onnx"
+        if not fallback.is_file():
+            raise RuntimeError("Fallback model is missing: " + str(fallback)) from exc
+        session = new_session("u2netp")
+        st.session_state["active_model"] = "U2NetP (Fallback)"
+        return session
 
 def studio_background(w, h, center, edge):
     y, x = np.mgrid[:h, :w].astype("float32")
